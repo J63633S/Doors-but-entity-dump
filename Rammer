@@ -13,7 +13,7 @@ local entity = Spawner:Create({
 	Lights = {
 		Flicker = {
 			Enabled = true,
-			Duration = 0.1
+			Duration = 0.7
 		},
 		Shatter = true,
 		Repair = false
@@ -28,7 +28,7 @@ local entity = Spawner:Create({
 	},
 	Movement = {
 		Speed = 270,
-		Delay = 2,
+		Delay = 3,
 		Reversed = false
 	},
 	Rebounding = {
