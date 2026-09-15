@@ -40,7 +40,7 @@ lastroom.changed:connect(function()
 	if table.find(rammersp, lastroom.Value) then
 		task.spawn(function()
 			task.wait(r3:NextInteger(5,25,lastroom.Value))
-			loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/rammer.rbxm"))()
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Rammer"))()
 		end)
 	end
 end)
