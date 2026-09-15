@@ -1,0 +1,46 @@
+game.SoundService.AmbientReverb = Enum.ReverbType.Cave
+
+warn("Loading")
+_G.ver = 0.1
+
+
+local seed = game.ReplicatedStorage.GameData.GameSeed.Value
+local r = Random.new(seed)
+local r2 = Random.new(seed+1)
+local r3 = Random.new(seed+2)
+local lastroom = game.ReplicatedStorage.GameData.LatestRoom
+local tweenservice = game:GetService("TweenService")
+
+local captions = {"Good Luck","A"}
+_G.rammer = false
+
+_G.insp = true
+
+local rammersp = {}
+
+for i = 35 , 95 , r:NextInteger(6,8,seed) do
+	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
+end
+
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Loaded",true)
+warn("Loaded")
+
+
+lastroom.changed:wait()
+
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("idk mode ".. _G.ver .." activated",true)
+task.wait(3)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Made by mmsauce21 Main script scripts credits go to localplayer",true)
+task.wait(2)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("hi",true)
+task.wait(1)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption(captions[r3:NextInteger(0,#captions,seed)],true)
+
+lastroom.changed:connect(function()
+	if table.find(rammersp, lastroom.Value) then
+		task.spawn(function()
+			task.wait(r3:NextInteger(5,25,lastroom.Value))
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/rammer.rbxm"))()
+		end)
+	end
+end)
