@@ -14,11 +14,13 @@ local tweenservice = game:GetService("TweenService")
 local captions = {"Good Luck","A"}
 _G.rammer = false
 _G.rasrki = false
+_G.A60 = false
 
 _G.insp = true
 
 local rammersp = {}
 local rasrkisp = {}
+local A60sp = {}
 
 for i = 20 , 95 , r:NextInteger(6,8,seed) do
 	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
@@ -26,6 +28,10 @@ end
 
 for i = 13 , 85 , r:NextInteger(6,8,seed) do
 	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
+end
+
+for i = 32 , 95 , r:NextInteger(10,12,seed) do
+	table.insert(A60sp,r2:NextInteger(i - 4,i + 7,seed + i))
 end
 
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Loaded",true)
@@ -53,6 +59,12 @@ if table.find(rasrkisp, lastroom.Value) then
 		task.spawn(function()
 			task.wait(r3:NextInteger(18,22,lastroom.Value))
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Rammer"))()
+		end)
+	end
+if table.find(A60sp, lastroom.Value) then
+		task.spawn(function()
+			task.wait(r3:NextInteger(18,22,lastroom.Value))
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/A60"))()
 		end)
 	end
 end)
