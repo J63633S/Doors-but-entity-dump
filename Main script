@@ -18,7 +18,7 @@ _G.insp = true
 
 local rammersp = {}
 
-for i = 35 , 95 , r:NextInteger(6,8,seed) do
+for i = 20 , 95 , r:NextInteger(6,8,seed) do
 	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
 end
 
@@ -39,7 +39,7 @@ require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption(c
 lastroom.changed:connect(function()
 	if table.find(rammersp, lastroom.Value) then
 		task.spawn(function()
-			task.wait(r3:NextInteger(5,25,lastroom.Value))
+			task.wait(r3:NextInteger(15,35,lastroom.Value))
 			loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Rammer"))()
 		end)
 	end
