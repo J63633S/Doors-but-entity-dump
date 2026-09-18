@@ -1,7 +1,7 @@
 game.SoundService.AmbientReverb = Enum.ReverbType.Cave
 
 warn("Loading")
-_G.ver = 0.2
+_G.ver = 0.3
 
 
 local seed = game.ReplicatedStorage.GameData.GameSeed.Value
@@ -16,6 +16,7 @@ _G.rammer = false
 _G.rasrki = false
 _G.A60 = false
 _G.seer = false
+_G.BA = false
 
 _G.insp = true
 
@@ -23,6 +24,7 @@ local rammersp = {}
 local rasrkisp = {}
 local A60sp = {}
 local seersp = {}
+local BAsp = {}
 
 for i = 20 , 95 , r:NextInteger(6,8,seed) do
 	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
@@ -38,6 +40,10 @@ end
 
 for i = 8 , 95 , r:NextInteger(7,10,seed) do
 	table.insert(seersp,r2:NextInteger(i - 4,i + 7,seed + i))
+end
+
+for i = 42 , 95 , r:NextInteger(16,36,seed) do
+	table.insert(BAsp,r2:NextInteger(i - 4,i + 7,seed + i))
 end
 
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Loaded",true)
@@ -77,6 +83,12 @@ if table.find(seersp, lastroom.Value) then
 		task.spawn(function()
 			task.wait(r3:NextInteger(8,18,lastroom.Value))
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Seer"))()
+		end)
+	end
+if table.find(BAsp, lastroom.Value) then
+		task.spawn(function()
+			task.wait(r3:NextInteger(26,46,lastroom.Value))
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/BA"))()
 		end)
 	end
 end)
