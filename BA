@@ -3,8 +3,8 @@
 local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Entity-Spawner-V2/main/init.luau"))()
 
 ---====== Fixed Global Tracking States ======---
-local BASE_SPEED = 100
-local SPEED_INCREMENT = 35 
+local BASE_SPEED = 300
+local SPEED_INCREMENT = 80 
 local current_speed = BASE_SPEED
 
 local Lighting = game:GetService("Lighting")
@@ -123,7 +123,7 @@ entity:SetCallback("OnRebounding", function(startOfRebound: boolean)
             
             for _, child in ipairs(workspace:GetChildren()) do
                 -- Locates the physical asset created by Vynixu matching your configuration name
-                if child.Name == "Template Entity" or child:FindFirstChild("Rush") or child:FindFirstChild("RushPhysics") then
+                if child.Name == "BA" or child:FindFirstChild("Rush") or child:FindFirstChild("RushPhysics") then
                     
                     -- Scans the moving model for the structural constraints controlling its runtime speed vector
                     for _, desc in ipairs(child:GetDescendants()) do
