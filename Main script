@@ -64,7 +64,7 @@ lastroom.changed:connect(function()
 if table.find(rasrkisp, lastroom.Value) then
 		task.spawn(function()
 			task.wait(r3:NextInteger(18,52,lastroom.Value))
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Rammer"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Fasrki"))()
 		end)
 	end
 if table.find(A60sp, lastroom.Value) then
