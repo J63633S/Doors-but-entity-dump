@@ -38,7 +38,7 @@ local entity = Spawner:Create({
 	},
 	Movement = {
 		Speed = BASE_SPEED, 
-		Delay = 0, 
+		Delay = 6, 
 		Reversed = false
 	},
 	Rebounding = {
@@ -46,7 +46,7 @@ local entity = Spawner:Create({
 		Type = "Ambush", 
 		Min = 2,
 		Max = 4, 
-		Delay = 6 
+		Delay = 0 
 	},
 	Damage = {
 		Enabled = true,
@@ -162,7 +162,7 @@ entity:SetCallback("OnDespawning", function()
         end
     end
     
-    task.delay(4.5, function()
+    task.delay(8, function()
         Lighting.Ambient = originalAmbient
         Lighting.OutdoorAmbient = originalOutdoorAmbient
         Lighting.ColorShift_Top = originalColorShift
