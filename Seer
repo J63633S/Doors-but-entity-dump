@@ -1,0 +1,177 @@
+-- Ensure you load the required services at the top
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+---====== Load spawner ======---
+local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Entity-Spawner-V2/main/init.luau"))()
+
+---====== Create entity ======---
+local entity = Spawner:Create({
+	Entity = {
+		Name = "Template Entity",
+		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Seer.rbxm",
+		HeightOffset = 0
+	},
+	Lights = {
+		Flicker = {
+			Enabled = true,
+			Duration = 1
+		},
+		Shatter = true,
+		Repair = false
+	},
+	Earthquake = {
+		Enabled = false
+	},
+	CameraShake = {
+		Enabled = false,
+		Range = 100,
+		Values = {1.5, 20, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
+	},
+	Movement = {
+		Speed = 0,        
+		Delay = 0,        
+		Reversed = false
+	},
+	Rebounding = {
+		Enabled = false, 
+		Type = "Ambush", 
+		Min = 1,
+		Max = 1,
+		Delay = 2
+	},
+	Damage = {
+		Enabled = false,        -- Proximity damage completely off
+		IgnoreHiding = false,
+		Range = 0,             
+		Amount = 0
+	},
+	Crucifixion = {
+        Type = "Guiding",
+		Enabled = true,
+		Range = 40,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding", 
+		Hints = {"Death", "Hints", "Go", "Here"},
+		Cause = "Looked at the entity for too long." 
+	}
+})
+
+---====== Setup Static Position & Door Hook ======---
+entity:SetCallback("OnSpawned", function()
+    print("Calculating real room center...")
+    
+    local latestRoomNum = ReplicatedStorage.GameData.LatestRoom.Value
+    local MainRemote = ReplicatedStorage:FindFirstChild("MainRemote", true)
+    
+    local positionThread = task.spawn(function()
+        local currentRoom = nil
+        local targetCFrame = nil
+        
+        while not targetCFrame do
+            currentRoom = Workspace.CurrentRooms:FindFirstChild(tostring(latestRoomNum))
+            if currentRoom then
+                local nodes = currentRoom:FindFirstChild("Nodes") or currentRoom:FindFirstChild("Pathfind")
+                local middleNode = nil
+                
+                if nodes then
+                    local children = nodes:GetChildren()
+                    if #children > 0 then
+                        middleNode = children[math.ceil(#children / 2)]
+                    end
+                end
+                
+                if middleNode and middleNode:IsA("BasePart") then
+                    targetCFrame = middleNode.CFrame * CFrame.new(0, entity.Config.Entity.HeightOffset, 0)
+                else
+                    local entrance = currentRoom:FindFirstChild("RoomStart") or currentRoom:FindFirstChild("Base") or currentRoom.PrimaryPart
+                    if entrance then
+                        targetCFrame = entrance.CFrame * CFrame.new(0, entity.Config.Entity.HeightOffset, -30)
+                    else
+                        targetCFrame = currentRoom:GetPivot() * CFrame.new(0, entity.Config.Entity.HeightOffset, -30)
+                    end
+                end
+            end
+            if not targetCFrame then
+                task.wait()
+            end
+        end
+        
+        print("Real middle locked! Freezing entity and starting custom look-check...")
+
+        -- Keep pinning the entity to the true middle and check for looking manually
+        while true do
+            local entityModel = entity.Model or entity.Instance
+            if entityModel then
+                -- Keep locked in center
+                for _, part in ipairs(entityModel:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                        part.Anchored = true
+                    end
+                end
+                entityModel:PivotTo(targetCFrame)
+                
+                -- Custom Camera Check (Dot Product)
+                local camera = Workspace.CurrentCamera
+                if camera then
+                    -- Vector from camera position to entity position
+                    local toEntity = (targetCFrame.Position - camera.CFrame.Position).Unit
+                    -- Camera looking direction
+                    local camDirection = camera.CFrame.LookVector
+                    -- Dot product shows how closely they align (1 = perfectly looking at it, 0.8 = on screen)
+                    local dotProduct = camDirection:Dot(toEntity)
+                    
+                    if dotProduct > 0.85 then 
+                        -- Player is looking at the center spot! Apply damage via DOORS remote or fallback
+                        local character = LocalPlayer.Character
+                        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                        
+                        if humanoid and humanoid.Health > 0 then
+                            if MainRemote then
+                                MainRemote:FireServer("Damage", 6)
+                            else
+                                humanoid:TakeDamage(6)
+                            end
+                        end
+                    end
+                end
+            end
+            task.wait(0.8) -- UPDATED: Fires the damage tick exactly every 0.8 seconds
+        end
+    end)
+    
+    -- Watch for the next door opening to clean everything up
+    local doorConnection
+    doorConnection = ReplicatedStorage.GameData.LatestRoom.Changed:Connect(function(newRoomValue)
+        if newRoomValue > latestRoomNum then
+            print("Next door opened! Despawning entity...")
+            task.cancel(positionThread)
+            if doorConnection then
+                doorConnection:Disconnect()
+            end
+            entity:Despawn()
+        end
+    end)
+end)
+
+-- Bypassing the built-in library callbacks since we hardcoded the look mechanics directly into our thread
+entity:SetCallback("OnLookAt", function() end)
+
+entity:SetCallback("OnDespawning", function()
+    print("Entity is despawning")
+end)
+
+entity:SetCallback("OnDespawned", function()
+    print("Entity has despawned")
+end)
+
+---====== Run entity ======---
+entity:Run(false) 
