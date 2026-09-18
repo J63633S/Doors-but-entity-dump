@@ -1,7 +1,7 @@
 game.SoundService.AmbientReverb = Enum.ReverbType.Cave
 
 warn("Loading")
-_G.ver = 0.1
+_G.ver = 0.2
 
 
 local seed = game.ReplicatedStorage.GameData.GameSeed.Value
