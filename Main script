@@ -28,8 +28,8 @@ for i = 20 , 95 , r:NextInteger(6,8,seed) do
 	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
 end
 
-for i = 13 , 85 , r:NextInteger(6,8,seed) do
-	table.insert(rammersp,r2:NextInteger(i - 4,i + 7,seed + i))
+for i = 20 , 85 , r:NextInteger(18,28,seed) do
+	table.insert(rasrkisp,r2:NextInteger(i - 4,i + 7,seed + i))
 end
 
 for i = 32 , 95 , r:NextInteger(10,12,seed) do
@@ -63,7 +63,7 @@ lastroom.changed:connect(function()
 	end
 if table.find(rasrkisp, lastroom.Value) then
 		task.spawn(function()
-			task.wait(r3:NextInteger(18,22,lastroom.Value))
+			task.wait(r3:NextInteger(18,52,lastroom.Value))
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Rammer"))()
 		end)
 	end
