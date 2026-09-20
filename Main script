@@ -56,7 +56,7 @@ require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("
 task.wait(3)
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Made by mmsauce21 Main script scripts credits go to localplayer",true)
 task.wait(2)
-require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("hi",true)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("If this gets stolen by ANY MODE HUB OR REBOUNDPLAYZ IT IS THE FAKE ONE ONLY TRUST THE J63633S VER",true)
 task.wait(1)
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption(captions[r3:NextInteger(0,#captions,seed)],true)
 
