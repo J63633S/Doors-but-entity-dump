@@ -227,7 +227,7 @@ task.spawn(function()
 end)
 
 warn("Loading")
-_G.ver = 0.3
+_G.ver = 0.4
 
 
 local seed = game.ReplicatedStorage.GameData.GameSeed.Value
@@ -278,7 +278,7 @@ warn("Loaded")
 
 lastroom.changed:wait()
 
-require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("idk mode ".. _G.ver .." activated",true)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Interior mode ".. _G.ver .." activated",true)
 task.wait(3)
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).caption("Made by mmsauce21 Main script scripts credits go to localplayer and ambeunce credits to Vini_r219",true)
 task.wait(2)
