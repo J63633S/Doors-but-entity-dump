@@ -20,58 +20,207 @@ game.SoundService.AmbientReverb = Enum.ReverbType.Cave
 -- Services
 local Lighting = game:GetService("Lighting")
 local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 
--- Configuration
-local BASE_FOG_COLOR = Color3.fromRGB(15, 25, 40) -- Dark atmospheric blue
-local BASE_AMBIENT = Color3.fromRGB(10, 12, 18)    -- Very dark blue ambient light
-local LIGHTNING_COLOR = Color3.fromRGB(35, 45, 65)  -- Dim, dark blue-grey lightning flash
+-- Targets the exact folder used in the real Doors game
+local CurrentRooms = Workspace:WaitForChild("CurrentRooms", 10)
 
-local function setupAtmosphere()
-	Lighting.ClockTime = 0 -- Sets time to midnight
-	Lighting.Brightness = 0
-	
-	-- Fog Settings
-	Lighting.FogColor = BASE_FOG_COLOR
-	Lighting.FogStart = 0
-	Lighting.FogEnd = 45 -- Low number makes the fog dense and close
-	
-	-- Ambient Settings
-	Lighting.Ambient = BASE_AMBIENT
-	Lighting.OutdoorAmbient = BASE_AMBIENT
+-- Refined Palette (Darkish Blue with texture visibility)
+local ROCKY_BLUE_AMBIENT = Color3.fromRGB(12, 18, 32)    -- Deep blue fill to keep walls visible
+local ROCKY_BLUE_FOG = Color3.fromRGB(10, 16, 28)        -- Dense darkish blue fog tint
+local LIGHTNING_BLUE = Color3.fromRGB(35, 52, 90)        -- Saturated dark blue flash color
+local NEON_BASE_COLOR = Color3.fromRGB(15, 28, 55)       -- Muted blue tint for neon lights
+
+-- Guiding Light Custom Color
+local GUIDING_LIGHT_COLOR = Color3.fromRGB(0, 70, 180)    -- Rich sapphire blue
+
+-- Dynamic tracking arrays for lightning flashes
+local targetedLights = {}
+local targetedNeons = {}
+local guidingLightObjects = {}
+
+-- Flag to prevent the anti-reset loop from overriding intentional lightning flashes
+local isFlashing = false
+
+-- Function to perfectly lock the lighting settings against game changes
+local function forceGlobalLighting()
+	Lighting.ClockTime = 0 
+	Lighting.Brightness = 0.05 -- Exposes the rocky wall textures just enough
+	Lighting.Ambient = ROCKY_BLUE_AMBIENT
+	Lighting.OutdoorAmbient = ROCKY_BLUE_AMBIENT
+
+	-- Custom properties to bring out details in the stone surfaces
+	Lighting.ColorShift_Top = Color3.fromRGB(15, 22, 38)
+	Lighting.ColorShift_Bottom = Color3.fromRGB(5, 8, 15)
+
+	-- Thick fog configuration
+	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere", Lighting)
+	atmosphere.Color = ROCKY_BLUE_FOG
+	atmosphere.Decay = Color3.fromRGB(2, 4, 10)            
+	atmosphere.Density = 0.48                             
+	atmosphere.Glare = 0
+	atmosphere.Haze = 1.2
 end
 
+-- ANTI-RESET: If Rush, Seek, or Figure tries to change lighting, instantly force it back
+local propertiesToLock = {"Ambient", "OutdoorAmbient", "Brightness", "ClockTime"}
+for _, prop in ipairs(propertiesToLock) do
+	Lighting:GetPropertyChangedSignal(prop):Connect(function()
+		if not isFlashing then
+			forceGlobalLighting()
+		end
+	end)
+end
+
+-- Helper function to detect if an object belongs to Guiding Light
+local function isGuidingLight(object)
+	local name = string.lower(object.Name)
+	if string.find(name, "guiding") or string.find(name, "lightglow") or string.find(name, "guidance") then
+		return true
+	end
+	
+	local currentParent = object.Parent
+	while currentParent and currentParent ~= Workspace do
+		local parentName = string.lower(currentParent.Name)
+		if string.find(parentName, "guiding") or string.find(parentName, "guidance") then
+			return true
+		end
+		currentParent = currentParent.Parent
+	end
+	return false
+end
+
+-- Styles newly loaded/spawned assets individually and applies Rocky textures
+local function styleObject(object)
+	-- FORCE ROCKY TEXTURE: Convert regular parts into stone texture
+	if object:IsA("BasePart") and object.Material ~= Enum.Material.Neon and not object:IsA("Terrain") then
+		-- Keeps original colors intact but textures it like stone
+		object.Material = Enum.Material.Rock
+	end
+
+	if isGuidingLight(object) then
+		if object:IsA("Light") or (object:IsA("BasePart") and object.Material == Enum.Material.Neon) then
+			object.Color = GUIDING_LIGHT_COLOR
+			if not table.find(guidingLightObjects, object) then
+				table.insert(guidingLightObjects, object)
+			end
+		end
+		object.Destroying:Connect(function()
+			local index = table.find(guidingLightObjects, object)
+			if index then table.remove(guidingLightObjects, index) end
+		end)
+		return
+	end
+
+	-- Modifies ordinary lamps and light structures inside the room
+	if object:IsA("Light") then
+		object.Color = Color3.fromRGB(18, 30, 60) -- Dark blue light glow
+		if not table.find(targetedLights, object) then
+			table.insert(targetedLights, object)
+		end
+		object.Destroying:Connect(function()
+			local index = table.find(targetedLights, object)
+			if index then table.remove(targetedLights, index) end
+		end)
+		
+	elseif object:IsA("BasePart") and object.Material == Enum.Material.Neon then
+		object.Color = NEON_BASE_COLOR
+		if not table.find(targetedNeons, object) then
+			table.insert(targetedNeons, object)
+		end
+		object.Destroying:Connect(function()
+			local index = table.find(targetedNeons, object)
+			if index then table.remove(targetedNeons, index) end
+		end)
+	end
+end
+
+-- Deep scans an entire room module
+local function styleRoom(roomModel)
+	for _, object in ipairs(roomModel:GetDescendants()) do
+		styleObject(object)
+	end
+	-- Catches dynamic elements or structural updates that load late
+	roomModel.DescendantAdded:Connect(styleObject)
+end
+
+-- 1. Initialize global layout properties
+forceGlobalLighting()
+
+-- 2. Style rooms that are already loaded right now
+if CurrentRooms then
+	for _, room in ipairs(CurrentRooms:GetChildren()) do
+		styleRoom(room)
+	end
+	
+	-- 3. Continuous Scan: Runs forever, converting every room to stone and dark blue
+	CurrentRooms.ChildAdded:Connect(function(room)
+		task.wait(0.12) -- Allows room streaming parameters to compile smoothly
+		styleRoom(room)
+		forceGlobalLighting() 
+	end)
+end
+
+-- Dark Blue Lightning Flash Function
 local function triggerLightning()
-	-- Quick flash to a darker lightning color
-	Lighting.Ambient = LIGHTNING_COLOR
-	Lighting.OutdoorAmbient = LIGHTNING_COLOR
-	Lighting.FogColor = Color3.fromRGB(25, 35, 50) -- Slightly brightened fog
+	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+	if not atmosphere then return end
+
+	isFlashing = true -- Temporarily bypass anti-reset to allow lightning color shifts
+
+	for _, light in ipairs(targetedLights) do
+		if light and light.Parent then light.Color = Color3.fromRGB(40, 65, 120) end
+	end
+	for _, neon in ipairs(targetedNeons) do
+		if neon and neon.Parent then neon.Color = Color3.fromRGB(35, 55, 100) end
+	end
+	for _, obj in ipairs(guidingLightObjects) do
+		if obj and obj.Parent then obj.Color = Color3.fromRGB(0, 40, 120) end
+	end
+
+	-- Flash global environment
+	Lighting.Ambient = LIGHTNING_BLUE
+	Lighting.OutdoorAmbient = LIGHTNING_BLUE
+	atmosphere.Color = Color3.fromRGB(28, 45, 82)
 	
-	task.wait(math.random(0.05, 0.15)) -- Flash duration
+	task.wait(math.random(0.08, 0.16)) -- Flash duration
 	
-	-- Return to normal dark settings using a smooth tween
-	local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local goal = {
-		Ambient = BASE_AMBIENT,
-		OutdoorAmbient = BASE_AMBIENT,
-		FogColor = BASE_FOG_COLOR
-	}
+	local tweenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 	
-	local tween = TweenService:Create(Lighting, tweenInfo, goal)
-	tween:Play()
+	-- Smoothly fade back down to the baseline
+	local ambTween = TweenService:Create(Lighting, tweenInfo, {Ambient = ROCKY_BLUE_AMBIENT, OutdoorAmbient = ROCKY_BLUE_AMBIENT})
+	local fogTween = TweenService:Create(atmosphere, tweenInfo, {Color = ROCKY_BLUE_FOG})
+	
+	ambTween:Play()
+	fogTween:Play()
+	
+	for _, light in ipairs(targetedLights) do
+		if light and light.Parent then
+			TweenService:Create(light, tweenInfo, {Color = Color3.fromRGB(18, 30, 60)}):Play()
+		end
+	end
+	for _, neon in ipairs(targetedNeons) do
+		if neon and neon.Parent then
+			TweenService:Create(neon, tweenInfo, {Color = NEON_BASE_COLOR}):Play()
+		end
+	end
+	for _, obj in ipairs(guidingLightObjects) do
+		if obj and obj.Parent then
+			TweenService:Create(obj, tweenInfo, {Color = GUIDING_LIGHT_COLOR}):Play()
+		end
+	end
+
+	ambTween.Completed:Wait()
+	isFlashing = false -- Turn protection loop back on
 end
 
--- Initialize the environment
-setupAtmosphere()
-
--- Continuous loop for random lightning strikes
+-- Lightning loop
 task.spawn(function()
 	while true do
-		task.wait(math.random(6, 15)) -- Time between strikes
+		task.wait(math.random(8, 18))
 		triggerLightning()
-		
-		-- 30% chance for a double lightning strike
-		if math.random() < 0.3 then
-			task.wait(0.2)
+		if math.random() < 0.25 then
+			task.wait(0.14)
 			triggerLightning()
 		end
 	end
