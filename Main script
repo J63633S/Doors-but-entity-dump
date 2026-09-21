@@ -1,4 +1,4 @@
-local function getGitSoundId(GithubSoundPath: string, AssetName: string): Sound
+Local Function getGitSoundId(GithubSoundPath: string, AssetName: string): Sound
     local Url = GithubSoundPath
 
     if not isfile(AssetName..".mp3") then 
@@ -25,35 +25,41 @@ local Workspace = game:GetService("Workspace")
 -- Targets the exact folder used in the real Doors game
 local CurrentRooms = Workspace:WaitForChild("CurrentRooms", 10)
 
--- Refined Palette (Darkish Blue with texture visibility)
-local ROCKY_BLUE_AMBIENT = Color3.fromRGB(12, 18, 32)    -- Deep blue fill to keep walls visible
-local ROCKY_BLUE_FOG = Color3.fromRGB(10, 16, 28)        -- Dense darkish blue fog tint
-local LIGHTNING_BLUE = Color3.fromRGB(35, 52, 90)        -- Saturated dark blue flash color
-local NEON_BASE_COLOR = Color3.fromRGB(15, 28, 55)       -- Muted blue tint for neon lights
+-- Default Rocky Dark Blue Palette
+local ROCKY_BLUE_AMBIENT = Color3.fromRGB(12, 18, 32)    
+local ROCKY_BLUE_FOG = Color3.fromRGB(10, 16, 28)        
+local LIGHTNING_BLUE = Color3.fromRGB(35, 52, 90)        
+local NEON_BASE_COLOR = Color3.fromRGB(15, 28, 55)       
+
+-- Seek Chase High-Visibility Configurations
+local CHASE_AMBIENT = Color3.fromRGB(130, 160, 200) 
+local CHASE_FOG_COLOR = Color3.fromRGB(140, 175, 215) 
+local CHASE_FOG_DENSITY = 0.15                       
 
 -- Guiding Light Custom Color
-local GUIDING_LIGHT_COLOR = Color3.fromRGB(0, 70, 180)    -- Rich sapphire blue
+local GUIDING_LIGHT_COLOR = Color3.fromRGB(0, 70, 180)    
 
--- Dynamic tracking arrays for lightning flashes
+-- Dynamic tracking arrays
 local targetedLights = {}
 local targetedNeons = {}
 local guidingLightObjects = {}
 
--- Flag to prevent the anti-reset loop from overriding intentional lightning flashes
+-- State Control Flags
 local isFlashing = false
+local isChaseActive = false
 
--- Function to perfectly lock the lighting settings against game changes
+-- Function to perfectly lock the lighting settings against regular game changes
 local function forceGlobalLighting()
+	if isChaseActive or isFlashing then return end -- Skip if lightning or seek override is handling things
+	
 	Lighting.ClockTime = 0 
-	Lighting.Brightness = 0.05 -- Exposes the rocky wall textures just enough
+	Lighting.Brightness = 0.05 -- Tiny bit of light to reveal the rocky textures
 	Lighting.Ambient = ROCKY_BLUE_AMBIENT
 	Lighting.OutdoorAmbient = ROCKY_BLUE_AMBIENT
 
-	-- Custom properties to bring out details in the stone surfaces
 	Lighting.ColorShift_Top = Color3.fromRGB(15, 22, 38)
 	Lighting.ColorShift_Bottom = Color3.fromRGB(5, 8, 15)
 
-	-- Thick fog configuration
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere", Lighting)
 	atmosphere.Color = ROCKY_BLUE_FOG
 	atmosphere.Decay = Color3.fromRGB(2, 4, 10)            
@@ -62,14 +68,10 @@ local function forceGlobalLighting()
 	atmosphere.Haze = 1.2
 end
 
--- ANTI-RESET: If Rush, Seek, or Figure tries to change lighting, instantly force it back
+-- ANTI-RESET: Instantly overrides Rush, Figure, or Library trying to drop default values
 local propertiesToLock = {"Ambient", "OutdoorAmbient", "Brightness", "ClockTime"}
 for _, prop in ipairs(propertiesToLock) do
-	Lighting:GetPropertyChangedSignal(prop):Connect(function()
-		if not isFlashing then
-			forceGlobalLighting()
-		end
-	end)
+	Lighting:GetPropertyChangedSignal(prop):Connect(forceGlobalLighting)
 end
 
 -- Helper function to detect if an object belongs to Guiding Light
@@ -90,11 +92,10 @@ local function isGuidingLight(object)
 	return false
 end
 
--- Styles newly loaded/spawned assets individually and applies Rocky textures
+-- Styles assets individually and forces Rocky textures across everything
 local function styleObject(object)
-	-- FORCE ROCKY TEXTURE: Convert regular parts into stone texture
+	-- Convert regular parts into stone texture
 	if object:IsA("BasePart") and object.Material ~= Enum.Material.Neon and not object:IsA("Terrain") then
-		-- Keeps original colors intact but textures it like stone
 		object.Material = Enum.Material.Rock
 	end
 
@@ -112,9 +113,8 @@ local function styleObject(object)
 		return
 	end
 
-	-- Modifies ordinary lamps and light structures inside the room
 	if object:IsA("Light") then
-		object.Color = Color3.fromRGB(18, 30, 60) -- Dark blue light glow
+		object.Color = Color3.fromRGB(18, 30, 60) 
 		if not table.find(targetedLights, object) then
 			table.insert(targetedLights, object)
 		end
@@ -135,38 +135,84 @@ local function styleObject(object)
 	end
 end
 
--- Deep scans an entire room module
+-- Deep scans entire active room modules
 local function styleRoom(roomModel)
 	for _, object in ipairs(roomModel:GetDescendants()) do
 		styleObject(object)
 	end
-	-- Catches dynamic elements or structural updates that load late
 	roomModel.DescendantAdded:Connect(styleObject)
 end
 
--- 1. Initialize global layout properties
+-- Smoothly handles transition into Seek Visibility
+local function enableSeekVisibility()
+	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+	local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	
+	Lighting.Brightness = 1.5 
+	TweenService:Create(Lighting, tweenInfo, {Ambient = CHASE_AMBIENT, OutdoorAmbient = CHASE_AMBIENT}):Play()
+	
+	if atmosphere then
+		TweenService:Create(atmosphere, tweenInfo, {Color = CHASE_FOG_COLOR, Density = CHASE_FOG_DENSITY}):Play()
+	end
+end
+
+-- Smoothly handles transition out of Seek Visibility back to Rocky Dark Blue
+local function disableSeekVisibility()
+	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
+	local tweenInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	Lighting.Brightness = 0.05 
+	
+	local returnTween = TweenService:Create(Lighting, tweenInfo, {Ambient = ROCKY_BLUE_AMBIENT, OutdoorAmbient = ROCKY_BLUE_AMBIENT})
+	returnTween:Play()
+	
+	if atmosphere then
+		TweenService:Create(atmosphere, tweenInfo, {Color = ROCKY_BLUE_FOG, Density = 0.48}):Play()
+	end
+	
+	returnTween.Completed:Wait()
+	isChaseActive = false
+	forceGlobalLighting()
+end
+
+-- 1. Initialize global baseline environment
 forceGlobalLighting()
 
--- 2. Style rooms that are already loaded right now
+-- 2. Style rooms currently loaded when executed
 if CurrentRooms then
 	for _, room in ipairs(CurrentRooms:GetChildren()) do
 		styleRoom(room)
 	end
 	
-	-- 3. Continuous Scan: Runs forever, converting every room to stone and dark blue
+	-- 3. Continuous Room Hook (Applies to all upcoming rooms forever)
 	CurrentRooms.ChildAdded:Connect(function(room)
-		task.wait(0.12) -- Allows room streaming parameters to compile smoothly
+		task.wait(0.12) 
 		styleRoom(room)
 		forceGlobalLighting() 
 	end)
 end
 
--- Dark Blue Lightning Flash Function
+-- Continuous Seek Spawn Checker Thread
+task.spawn(function()
+	while true do
+		task.wait(0.15)
+		local seekClone = Workspace:FindFirstChild("SeekMovingNewClone")
+		
+		if seekClone and not isChaseActive then
+			isChaseActive = true
+			enableSeekVisibility()
+		elseif not seekClone and isChaseActive then
+			disableSeekVisibility()
+		end
+	end
+end)
+
+-- Dark Blue Lightning Flash Loop
 local function triggerLightning()
 	local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
-	if not atmosphere then return end
+	if not atmosphere or isChaseActive then return end -- Skip lightning during Seek Chase
 
-	isFlashing = true -- Temporarily bypass anti-reset to allow lightning color shifts
+	isFlashing = true 
 
 	for _, light in ipairs(targetedLights) do
 		if light and light.Parent then light.Color = Color3.fromRGB(40, 65, 120) end
@@ -178,16 +224,13 @@ local function triggerLightning()
 		if obj and obj.Parent then obj.Color = Color3.fromRGB(0, 40, 120) end
 	end
 
-	-- Flash global environment
 	Lighting.Ambient = LIGHTNING_BLUE
 	Lighting.OutdoorAmbient = LIGHTNING_BLUE
 	atmosphere.Color = Color3.fromRGB(28, 45, 82)
 	
-	task.wait(math.random(0.08, 0.16)) -- Flash duration
+	task.wait(math.random(0.08, 0.16)) 
 	
 	local tweenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	
-	-- Smoothly fade back down to the baseline
 	local ambTween = TweenService:Create(Lighting, tweenInfo, {Ambient = ROCKY_BLUE_AMBIENT, OutdoorAmbient = ROCKY_BLUE_AMBIENT})
 	local fogTween = TweenService:Create(atmosphere, tweenInfo, {Color = ROCKY_BLUE_FOG})
 	
@@ -211,10 +254,9 @@ local function triggerLightning()
 	end
 
 	ambTween.Completed:Wait()
-	isFlashing = false -- Turn protection loop back on
+	isFlashing = false 
 end
 
--- Lightning loop
 task.spawn(function()
 	while true do
 		task.wait(math.random(8, 18))
