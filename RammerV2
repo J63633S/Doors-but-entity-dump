@@ -63,7 +63,7 @@ local entity = Spawner:Create({
 
 entity:SetCallback("OnSpawned", function()
     print("Entity has spawned")
-for i = 1, 16 do
+for i = 1, 7 do
 wait(0.1)
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).camShaker:ShakeOnce(15, 20, 0.1, 1)
     end
@@ -103,6 +103,10 @@ end)
 
 entity:SetCallback("OnDespawned", function()
     print("Entity has despawned")
+for i = 1, 12 do
+wait(0.1)
+require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).camShaker:ShakeOnce(15, 20, 0.1, 1)
+    end
 local CustomAchievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Custom-Achievements/main/init.luau"))()
 
 if CustomAchievements:CheckOwned("TestAchievement") then
