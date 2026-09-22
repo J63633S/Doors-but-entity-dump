@@ -63,7 +63,7 @@ local entity = Spawner:Create({
 
 entity:SetCallback("OnSpawned", function()
     print("Entity has spawned")
-for i = 1, 100 do
+for i = 1, 16 do
 wait(0.1)
 require(game.Players.LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game).camShaker:ShakeOnce(15, 20, 0.1, 1)
     end
