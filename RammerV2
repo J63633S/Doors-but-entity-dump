@@ -8,7 +8,7 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 local entity = Spawner:Create({
 	Entity = {
 		Name = "Rammer",
-		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/RAMMERV2.rbxm",
+		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/RAMMERV2FIX.rbxm",
 		HeightOffset = 0
 	},
 	Lights = {
