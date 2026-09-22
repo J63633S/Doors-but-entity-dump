@@ -128,22 +128,96 @@ end)
 entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 	if newHealth <= 0 then
 		print("Entity has killed the player")
-local CustomAchievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Custom-Achievements/main/init.luau"))()
+		
+		-- [EXISTING CUSTOM ACHIEVEMENTS CODE]
+		local CustomAchievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Custom-Achievements/main/init.luau"))()
 
-if CustomAchievements:CheckOwned("TestAchievement") then
-    CustomAchievements:Revoke("TestAchievement")
-end
+		if CustomAchievements:CheckOwned("TestAchievement") then
+			CustomAchievements:Revoke("TestAchievement")
+		end
 
-CustomAchievements:Grant({
-    Identifier = "Succumb to the rammer",
-    Title = "Succumb to the rammer",
-    Desc = "You werent fast enough",
-    Reason = "Try again next time",
-    Image = "rbxassetid://78606977461828"
-}, {
-    CheckOwned = false,
-    Remember = true
-})
+		CustomAchievements:Grant({
+			Identifier = "Succumb to the rammer",
+			Title = "Succumb to the rammer",
+			Desc = "You werent fast enough",
+			Reason = "Try again next time",
+			Image = "rbxassetid://78606977461828"
+		}, {
+			CheckOwned = false,
+			Remember = true
+		})
+		
+		-- [ADDED JUMPSCARE SCRIPT MECHANICS]
+		local Players = game:GetService("Players")
+		local TweenService = game:GetService("TweenService")
+		local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+		
+		-- 1. Fullscreen Container
+		local jumpscareGui = Instance.new("ScreenGui")
+		jumpscareGui.Name = "CustomJumpscareGui"
+		jumpscareGui.IgnoreGuiInset = true
+		jumpscareGui.Parent = playerGui
+		
+		-- 2. Flashing Background Frame
+		local flashFrame = Instance.new("Frame")
+		flashFrame.Size = UDim2.new(1, 0, 1, 0)
+		flashFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		flashFrame.BorderSizePixel = 0
+		flashFrame.BackgroundTransparency = 0
+		flashFrame.Parent = jumpscareGui
+		
+		-- 3. Jumpscare Image (Stretched profile)
+		local jumpImage = Instance.new("ImageLabel")
+		jumpImage.Image = "rbxassetid://131239084288771"
+		jumpImage.AnchorPoint = Vector2.new(0.5, 0.5)
+		jumpImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+		jumpImage.Size = UDim2.new(0.1, 0, 0.1, 0) -- Starts small in center
+		jumpImage.BackgroundTransparency = 1
+		jumpImage.ImageTransparency = 0
+		jumpImage.BorderSizePixel = 0
+		jumpImage.Parent = jumpscareGui
+		
+		-- 4. Play Jumpscare Audio
+		local sound = Instance.new("Sound")
+		sound.SoundId = "rbxassetid://116282238939992"
+		sound.Volume = 3
+		sound.Parent = jumpscareGui
+		sound:Play()
+		
+		-- 5. Tween: Speed zoom to heavily STRETCHED dimensions over 0.7s
+		local zoomTween = TweenService:Create(jumpImage, TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			Size = UDim2.new(1.1, 0, 0.9, 0) -- Stretched out past normal layout borders
+		})
+		zoomTween:Play()
+		
+		-- 6. Background Flashing & Shaking Loop (~1.2s total run-time)
+		task.spawn(function()
+			local turquoise = Color3.fromRGB(29, 171, 114)
+			local black = Color3.fromRGB(0, 0, 0)
+			local rng = Random.new()
+			
+			for i = 1, 12 do
+				flashFrame.BackgroundColor3 = turquoise
+				jumpImage.Rotation = rng:NextNumber(-15, 15)
+				task.wait(0.05)
+				
+				flashFrame.BackgroundColor3 = black
+				jumpImage.Rotation = rng:NextNumber(-15, 15)
+				task.wait(0.05)
+			end
+			
+			-- 7. Complete Fade Out: Directly fades the image and background frame textures simultaneously
+			local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+			
+			local imageFade = TweenService:Create(jumpImage, tweenInfo, { ImageTransparency = 1 })
+			local frameFade = TweenService:Create(flashFrame, tweenInfo, { BackgroundTransparency = 1 })
+			
+			imageFade:Play()
+			frameFade:Play()
+			
+			imageFade.Completed:Wait()
+			jumpscareGui:Destroy()
+		end)
 	else
 		print("Entity has damaged the player")
 	end
