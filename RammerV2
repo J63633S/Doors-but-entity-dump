@@ -8,13 +8,13 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 local entity = Spawner:Create({
 	Entity = {
 		Name = "Rammer",
-		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/rammer.rbxm",
+		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/RAMMERV2.rbxm",
 		HeightOffset = 0
 	},
 	Lights = {
 		Flicker = {
 			Enabled = true,
-			Duration = 0.7
+			Duration = 1
 		},
 		Shatter = true,
 		Repair = false
@@ -24,12 +24,12 @@ local entity = Spawner:Create({
 	},
 	CameraShake = {
 		Enabled = true,
-		Range = 350,
+		Range = 280,
 		Values = {30, 100, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
-		Speed = 270,
-		Delay = 3,
+		Speed = 290,
+		Delay = 4,
 		Reversed = false
 	},
 	Rebounding = {
