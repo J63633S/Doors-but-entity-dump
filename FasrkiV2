@@ -42,7 +42,7 @@ local entity = Spawner:Create({
 	Damage = {
 		Enabled = true,
 		IgnoreHiding = false,
-		Range = 17,
+		Range = 13,
 		Amount = 125
 	},
 	Crucifixion = {
@@ -55,7 +55,7 @@ local entity = Spawner:Create({
 	Death = {
 		Type = "Guiding", -- "Curious"
 		Hints = {"You died to fasrki", "Dont get in his way", "Stay crouched he'll damage you if your not crouched", "Goodluck next time"},
-		Cause = ""
+		Cause = "Fasrki"
 	}
 })
 
