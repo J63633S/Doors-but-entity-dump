@@ -190,7 +190,7 @@ CustomAchievements:Grant({
     Title = "Survived BA",
     Desc = "Did you see me?",
     Reason = "Lost in the blue",
-    Image = "rbxassetid://77454064533741"
+    Image = "rbxassetid://121559729462198"
 }, {
     CheckOwned = true,
     Remember = false
