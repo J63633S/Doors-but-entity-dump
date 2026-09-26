@@ -109,8 +109,8 @@ CustomAchievements:Grant({
     Identifier = "A60",
     Title = "Static Screech",
     Desc = "A tale not to be heard",
-    Reason = "Survived A60",
-    Image = "rbxassetid://80214912736837"
+    Reason = "Survived the ominous entity known as A60",
+    Image = "rbxassetid://125391353359620"
 }, {
     CheckOwned = false,
     Remember = true
