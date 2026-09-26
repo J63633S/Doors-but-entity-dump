@@ -7,7 +7,7 @@ local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/Regul
 local entity = Spawner:Create({
 	Entity = {
 		Name = "Watcher",
-		Asset = "https://github.com/RegularVynixu/DOORS-Entity-Spawner-V2/raw/main/Assets/Entities/Rush.rbxm",
+		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/watcher.rbxm",
 		HeightOffset = 0
 	},
 	Lights = {
