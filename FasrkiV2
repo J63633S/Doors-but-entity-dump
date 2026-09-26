@@ -154,8 +154,8 @@ CustomAchievements:Grant({
     Reason = "Fasrki cant hear you",
     Image = "rbxassetid://79034565422611"
 }, {
-    CheckOwned = false,
-    Remember = true
+    CheckOwned = true,
+    Remember = false
 })
 end)
 
