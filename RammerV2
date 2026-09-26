@@ -115,13 +115,13 @@ end
 
 CustomAchievements:Grant({
     Identifier = "Rammer",
-    Title = "Get rammed",
-    Desc = "Whats that noise i hear",
-    Reason = "You survive the rammer",
-    Image = "rbxassetid://78606977461828"
+    Title = "Survive the Ramming",
+    Desc = "My head...",
+    Reason = "No faster then a train",
+    Image = "rbxassetid://107670879894997"
 }, {
     CheckOwned = true,
-    Remember = true
+    Remember = false
 })
 end)
 
@@ -141,7 +141,7 @@ entity:SetCallback("OnDamagePlayer", function(newHealth: number)
 			Title = "Succumb to the rammer",
 			Desc = "You werent fast enough",
 			Reason = "Try again next time",
-			Image = "rbxassetid://78606977461828"
+			Image = "rbxassetid://107670879894997"
 		}, {
 			CheckOwned = false,
 			Remember = true
