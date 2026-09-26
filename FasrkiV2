@@ -141,6 +141,22 @@ end)
 entity:SetCallback("OnDespawned", function()
     print("Entity has despawned")
     entityActive = false -- Instantly shuts down the crouching check loops
+local CustomAchievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Custom-Achievements/main/init.luau"))()
+
+if CustomAchievements:CheckOwned("TestAchievement") then
+    CustomAchievements:Revoke("TestAchievement")
+end
+
+CustomAchievements:Grant({
+    Identifier = "Fasrki",
+    Title = "Crouched and silent",
+    Desc = "Its whisper may be louder",
+    Reason = "Fasrki cant hear you",
+    Image = "rbxassetid://79034565422611"
+}, {
+    CheckOwned = false,
+    Remember = true
+})
 end)
 
 entity:SetCallback("OnDamagePlayer", function(newHealth: number)
