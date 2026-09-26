@@ -112,8 +112,8 @@ CustomAchievements:Grant({
     Reason = "Survived the ominous entity known as A60",
     Image = "rbxassetid://125391353359620"
 }, {
-    CheckOwned = false,
-    Remember = true
+    CheckOwned = true,
+    Remember = false
 })
 end)
 
