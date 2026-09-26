@@ -121,7 +121,7 @@ CustomAchievements:Grant({
     Image = "rbxassetid://107670879894997"
 }, {
     CheckOwned = true,
-    Remember = false
+    Remember = true
 })
 end)
 
