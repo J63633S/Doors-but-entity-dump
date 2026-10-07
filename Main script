@@ -53,7 +53,7 @@ local function forceGlobalLighting()
 	if isChaseActive or isFlashing then return end -- Skip if lightning or seek override is handling things
 	
 	Lighting.ClockTime = 0 
-	Lighting.Brightness = 0.05 -- Tiny bit of light to reveal the rocky textures
+	Lighting.Brightness = 0.5 -- Tiny bit of light to reveal the rocky textures
 	Lighting.Ambient = ROCKY_BLUE_AMBIENT
 	Lighting.OutdoorAmbient = ROCKY_BLUE_AMBIENT
 
