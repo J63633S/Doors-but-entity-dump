@@ -362,7 +362,7 @@ if table.find(A60sp, lastroom.Value) then
 if table.find(seersp, lastroom.Value) then
 		task.spawn(function()
 			task.wait(r3:NextInteger(8,18,lastroom.Value))
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Seer"))()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/Seerv2"))()
 		end)
 	end
 if table.find(BAsp, lastroom.Value) then
