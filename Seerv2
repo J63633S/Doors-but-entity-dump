@@ -1,4 +1,4 @@
-q-- Ensure you load the required services at the top
+-- Ensure you load the required services at the top
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -29,7 +29,7 @@ local entity = Spawner:Create({
 	},
 	CameraShake = {
 		Enabled = true,
-		Range = 20,
+		Range = 5,
 		Values = {70, 120, 0.1, 1} -- Magnitude, Roughness, FadeIn, FadeOut
 	},
 	Movement = {
@@ -144,7 +144,7 @@ entity:SetCallback("OnSpawned", function()
                     end
                 end
             end
-            task.wait(0.3) -- UPDATED: Fires the damage tick exactly every 0.8 seconds
+            task.wait(0.8) -- UPDATED: Fires the damage tick exactly every 0.8 seconds
         end
     end)
     
