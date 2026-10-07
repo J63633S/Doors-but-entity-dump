@@ -265,7 +265,7 @@ entity:SetCallback("OnStartMoving", function()
     local Players = game:GetService("Players")
     local localPlayer = Players.LocalPlayer
 
-    local COOLDOWN_TIME = 1.0 -- Cooldown in seconds
+    local COOLDOWN_TIME = 0.3 -- Cooldown in seconds
     local isOnCooldown = false
 
     -- Function that handles the character loop
