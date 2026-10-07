@@ -19,9 +19,9 @@ local entity = Spawner:Create({
 	Lights = {
 		Flicker = {
 			Enabled = true,
-			Duration = 1
+			Duration = 8
 		},
-		Shatter = true,
+		Shatter = false,
 		Repair = false
 	},
 	Earthquake = {
