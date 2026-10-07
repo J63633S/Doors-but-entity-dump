@@ -1,0 +1,363 @@
+if game.Workspace:FindFirstChild("SeekMovingNewClone") then return end
+---====== Load spawner ======---
+
+local Spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Entity-Spawner-V2/main/init.luau"))()
+
+---====== Create entity ======---
+
+local entity = Spawner:Create({
+	Entity = {
+		Name = "Fasrki",
+		Asset = "https://raw.githubusercontent.com/J63633S/Doors-but-entity-dump/main/fasrkiV3.rbxm",
+		HeightOffset = 0
+	},
+	Lights = {
+		Flicker = {
+			Enabled = true,
+			Duration = 17
+		},
+		Shatter = true,
+		Repair = false
+	},
+	Earthquake = {
+		Enabled = true
+	},
+	CameraShake = {
+		Enabled = true,
+		Range = 70,
+		Values = {30, 70, 0.1, 0.1} -- Magnitude, Roughness, FadeIn, FadeOut
+	},
+	Movement = {
+		Speed = 160,
+		Delay = 3,
+		Reversed = false
+	},
+	Rebounding = {
+		Enabled = false,
+		Type = "Ambush", -- "Blitz"
+		Min = 1,
+		Max = 1,
+		Delay = 2
+	},
+	Damage = {
+		Enabled = true,
+		IgnoreHiding = false,
+		Range = 16,
+		Amount = 125
+	},
+	Crucifixion = {
+        Type = "Guiding",
+		Enabled = true,
+		Range = 40,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding", -- "Curious"
+		Hints = {"You died to fasrki", "Dont get in his way", "Stay crouched he'll damage you if your not crouched", "Goodluck next time"},
+		Cause = "Fasrki"
+	}
+})
+
+-- Shared state variable to track if the entity is active
+local entityActive = false
+
+---====== Debug entity ======---
+
+entity:SetCallback("OnSpawned", function()
+    print("Entity has spawned")
+    entityActive = true -- Mark entity as active
+--!strict
+local ContentProvider = game:GetService("ContentProvider")
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+
+local camera = Workspace.CurrentCamera
+
+local Rumble = Instance.new("Sound")
+Rumble.Name = "Rumble"
+Rumble.SoundId = "rbxassetid://923073285"
+Rumble.Volume = 1
+Rumble.Parent = SoundService
+
+local screams2 = Instance.new("Sound")
+screams2.Name = "screams2"
+screams2.SoundId = "rbxassetid://9125714014"
+screams2.PlaybackSpeed = 0.7
+screams2.Volume = 1
+
+local eqEffect = Instance.new("EqualizerSoundEffect")
+eqEffect.LowGain = 0
+eqEffect.MidGain = 0
+eqEffect.HighGain = 0
+eqEffect.Parent = screams2
+
+screams2.Parent = SoundService
+
+local MoreScreaming = Instance.new("Sound")
+MoreScreaming.Name = "MoreScreaming"
+MoreScreaming.SoundId = "rbxassetid://9125713856"
+MoreScreaming.PlaybackSpeed = 1.4
+MoreScreaming.Volume = 1
+MoreScreaming.Parent = SoundService
+
+local FarMoreScreaming = Instance.new("Sound")
+FarMoreScreaming.Name = "Far More screaming"
+FarMoreScreaming.SoundId = "rbxassetid://9125713633"
+FarMoreScreaming.PlaybackSpeed = 2
+FarMoreScreaming.Volume = 1
+
+local pitchEffect = Instance.new("PitchShiftSoundEffect")
+pitchEffect.Octave = 0.5
+pitchEffect.Parent = FarMoreScreaming
+
+FarMoreScreaming.Parent = SoundService
+
+local RumblingAgain = Instance.new("Sound")
+RumblingAgain.Name = "Rumbling, again"
+RumblingAgain.SoundId = "rbxassetid://128063443398869"
+RumblingAgain.PlaybackSpeed = 0.6
+RumblingAgain.Volume = 1
+
+local pitch1 = Instance.new("PitchShiftSoundEffect")
+pitch1.Octave = 0.5
+pitch1.Parent = RumblingAgain
+
+local pitch2 = Instance.new("PitchShiftSoundEffect")
+pitch2.Octave = 0.65
+pitch2.Parent = RumblingAgain
+
+local pitch3 = Instance.new("PitchShiftSoundEffect")
+pitch3.Octave = 0.8
+pitch3.Parent = RumblingAgain
+
+RumblingAgain.Parent = SoundService
+
+local allSounds = { Rumble, screams2, MoreScreaming, FarMoreScreaming, RumblingAgain }
+
+task.spawn(function()
+	pcall(function()
+		ContentProvider:PreloadAsync(allSounds)
+	end)
+
+	for _, s in ipairs(allSounds) do
+		if not s.IsLoaded then
+			s.Loaded:Wait()
+		end
+	end
+
+	task.delay(1, function()
+		screams2:Play()
+	end)
+
+	task.delay(2, function()
+		MoreScreaming:Play()
+	end)
+
+	task.delay(3, function()
+		RumblingAgain:Play()
+	end)
+
+	task.delay(4, function()
+		FarMoreScreaming:Play()
+	end)
+end)
+
+local colorCorrection = Instance.new("ColorCorrectionEffect")
+colorCorrection.Name = "NauseaColorCorrection"
+colorCorrection.TintColor = Color3.fromRGB(0, 100, 180)
+colorCorrection.Brightness = -1
+colorCorrection.Contrast = 0.2
+colorCorrection.Saturation = 0.5
+colorCorrection.Parent = Lighting
+
+local NAUSEA_SPEED = 2.0
+local ROLL_ANGLE = 4.5
+local FOV_AMPLITUDE = 6
+local DEFAULT_FOV = 70
+
+local timeElapsed = 0
+local intensity = 1.0
+local isFading = false
+local renderConn: RBXScriptConnection? = nil
+
+renderConn = RunService.RenderStepped:Connect(function(deltaTime: number)
+	timeElapsed += deltaTime * NAUSEA_SPEED
+
+	if not isFading then
+		local pulse = (math.sin(timeElapsed * 1.8) + 1) * 0.5
+		colorCorrection.Brightness = -1.0 + (pulse * 0.5)
+	end
+
+	colorCorrection.Contrast = 0.15 + (math.sin(timeElapsed * 1.5) * 0.2 * intensity)
+
+	if camera then
+		local rollRad = math.rad(math.sin(timeElapsed) * ROLL_ANGLE * intensity)
+		camera.CFrame = camera.CFrame * CFrame.Angles(0, 0, rollRad)
+		camera.FieldOfView = DEFAULT_FOV + (math.sin(timeElapsed * 0.8) * FOV_AMPLITUDE * intensity)
+	end
+end)
+
+task.delay(12, function()
+	isFading = true
+	local FADE_DURATION = 2.5
+
+	local tweenInfo = TweenInfo.new(FADE_DURATION, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local colorTween = TweenService:Create(colorCorrection, tweenInfo, {
+		Brightness = 0,
+		Contrast = 0,
+		Saturation = 0,
+		TintColor = Color3.fromRGB(255, 255, 255),
+	})
+	colorTween:Play()
+
+	local rumbleTween = TweenService:Create(Rumble, tweenInfo, { Volume = 0 })
+	local screams2Tween = TweenService:Create(screams2, tweenInfo, { Volume = 0 })
+	local moreScreamingTween = TweenService:Create(MoreScreaming, tweenInfo, { Volume = 0 })
+	local farMoreScreamingTween = TweenService:Create(FarMoreScreaming, tweenInfo, { Volume = 0 })
+	local rumblingAgainTween = TweenService:Create(RumblingAgain, tweenInfo, { Volume = 0 })
+
+	rumbleTween:Play()
+	screams2Tween:Play()
+	moreScreamingTween:Play()
+	farMoreScreamingTween:Play()
+	rumblingAgainTween:Play()
+
+	local fadeStart = os.clock()
+	local taperConn: RBXScriptConnection? = nil
+
+	taperConn = RunService.Heartbeat:Connect(function()
+		local elapsed = os.clock() - fadeStart
+		local alpha = math.clamp(elapsed / FADE_DURATION, 0, 1)
+		intensity = 1 - alpha
+
+		if alpha >= 1 then
+			if taperConn then
+				taperConn:Disconnect()
+				taperConn = nil
+			end
+		end
+	end)
+
+	colorTween.Completed:Connect(function()
+		if renderConn then
+			renderConn:Disconnect()
+			renderConn = nil
+		end
+		if camera then
+			camera.FieldOfView = DEFAULT_FOV
+		end
+		colorCorrection:Destroy()
+		Rumble:Destroy()
+		screams2:Destroy()
+		MoreScreaming:Destroy()
+		FarMoreScreaming:Destroy()
+		RumblingAgain:Destroy()
+	end)
+end)
+end)
+
+entity:SetCallback("OnStartMoving", function()
+    print("Entity has started moving")
+    local Players = game:GetService("Players")
+    local localPlayer = Players.LocalPlayer
+
+    local COOLDOWN_TIME = 1.0 -- Cooldown in seconds
+    local isOnCooldown = false
+
+    -- Function that handles the character loop
+    local function monitorCharacter(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        
+        -- Loop runs only while the character is valid, alive, AND the entity is active
+        while character:IsDescendantOf(workspace) and humanoid.Health > 0 and entityActive do
+            task.wait(0.1) -- Fast polling rate to check the attribute
+            
+            -- Extra safety break check in case entityActive changes during task.wait
+            if not entityActive then break end
+
+            if character:GetAttribute("Crouching") ~= true and not isOnCooldown then
+                isOnCooldown = true
+                
+                -- Take damage safely
+                humanoid.Health = math.max(0, humanoid.Health - 5)
+                
+                -- Wait for the cooldown to expire, then reset the switch
+                task.wait(COOLDOWN_TIME)
+                isOnCooldown = false
+            end
+        end
+    end
+
+    -- Run for current character if it already exists
+    if localPlayer.Character then
+        task.spawn(monitorCharacter, localPlayer.Character)
+    end
+
+    -- Run every time the player respawns
+    localPlayer.CharacterAdded:Connect(monitorCharacter)
+end)
+
+entity:SetCallback("OnEnterRoom", function(room: Model, firstTime: boolean)
+    if firstTime == true then
+        print("Entity has entered room: ".. room.Name.. " for the first time")
+    else
+        print("Entity has entered room: ".. room.Name.. " again")
+    end
+end)
+
+entity:SetCallback("OnLookAt", function(lineOfSight: boolean)
+	if lineOfSight == true then
+		print("Player is looking at entity")
+	else
+		print("Player view is obstructed by something")
+	end
+end)
+
+entity:SetCallback("OnRebounding", function(startOfRebound: boolean)
+    if startOfRebound == true then
+        print("Entity has started rebounding")
+	else
+        print("Entity has finished rebounding")
+	end
+end)
+
+entity:SetCallback("OnDespawning", function()
+    print("Entity is despawning")
+end)
+
+entity:SetCallback("OnDespawned", function()
+    print("Entity has despawned")
+    entityActive = false -- Instantly shuts down the crouching check loops
+local CustomAchievements = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/DOORS-Custom-Achievements/main/init.luau"))()
+
+if CustomAchievements:CheckOwned("TestAchievement") then
+    CustomAchievements:Revoke("TestAchievement")
+end
+
+CustomAchievements:Grant({
+    Identifier = "Fasrki",
+    Title = "Crouched and silent",
+    Desc = "Its whisper may be louder",
+    Reason = "Fasrki cant hear you",
+    Image = "rbxassetid://79034565422611"
+}, {
+    CheckOwned = true,
+    Remember = false
+})
+end)
+
+entity:SetCallback("OnDamagePlayer", function(newHealth: number)
+	if newHealth <= 0 then
+		print("Entity has killed the player")
+	else
+		print("Entity has damaged the player")
+	end
+end)
+
+---====== Run entity ======---
+
+entity:Run(true)
